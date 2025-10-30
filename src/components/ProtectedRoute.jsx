@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, loading } = useAuth(); // Cambiar "usuarioActual" por "user"
 
   if (loading) {
     return (
@@ -19,7 +19,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
     return <Navigate to="/iniciar-sesion" replace />;
   }
 
-  if (requireAdmin && !isAdmin()) {
+  if (requireAdmin && user.rol !== 'admin') {
     return <Navigate to="/" replace />;
   }
 

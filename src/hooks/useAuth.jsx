@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, createContext } from 'react';
-import { users } from '../data/users';
+import { users as initialUsers } from '../data/users';
 
 const AuthContext = createContext();
 
@@ -11,6 +11,16 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // MISMA función para obtener usuarios que useUsuarios.js
+  const getUsers = () => {
+    const storedUsers = localStorage.getItem('app_usuarios');
+    if (storedUsers) {
+      return JSON.parse(storedUsers);
+    }
+    // Si no hay en localStorage, usar los de users.jsx
+    return initialUsers;
+  };
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -20,6 +30,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (username, password) => {
+    const users = getUsers(); // Usar MISMA fuente de datos
+    console.log('🔐 Intentando login con:', { username, password });
+    console.log('📋 Usuarios disponibles:', users);
+    
     const usuario = users.find(
       u => u.user === username && u.pass === password
     );
@@ -35,8 +49,10 @@ export const AuthProvider = ({ children }) => {
       
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
+      console.log('✅ Login exitoso:', userData);
       return { success: true, user: userData };
     } else {
+      console.log('❌ Login fallido - Usuario no encontrado');
       return { success: false, error: 'Usuario o contraseña incorrectos' };
     }
   };
@@ -44,7 +60,6 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
-    // La redirección se manejará en los componentes que usen logout
   };
 
   const isAdmin = () => {
