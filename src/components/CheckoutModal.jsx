@@ -1,23 +1,34 @@
-
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const CheckoutModal = ({ onClose }) => {
   const { vaciarCarrito, total } = useCart();
-  const { usuarioActual } = useAuth();
+  const { user, isAuthenticated, actualizarUsuario } = useAuth();
+  const navigate = useNavigate();
   const [direccion, setDireccion] = useState('');
   const [error, setError] = useState('');
   const [procesando, setProcesando] = useState(false);
 
+  // Redirigir si no está autenticado
   useEffect(() => {
-    if (usuarioActual?.direccion) {
-      setDireccion(usuarioActual.direccion);
+    if (!isAuthenticated()) {
+      onClose();
+      navigate('/iniciar-sesion');
+      return;
     }
-  }, [usuarioActual]);
+  }, [isAuthenticated, navigate, onClose]);
+
+  // Cargar dirección si el usuario está autenticado
+  useEffect(() => {
+    if (isAuthenticated() && user?.direccion) {
+      setDireccion(user.direccion);
+    }
+  }, [user, isAuthenticated]);
 
   const validarPago = () => {
-    if (!usuarioActual?.tarjeta?.valida) {
+    if (!user?.tarjeta?.valida) {
       return { success: false, error: "Fondos insuficientes. Tarjeta rechazada." };
     }
     return new Promise((resolve) => {
@@ -43,17 +54,18 @@ const CheckoutModal = ({ onClose }) => {
       return;
     }
 
-    // Guardar dirección
-    const usuariosActualizados = JSON.parse(localStorage.getItem('usuarios') || '[]')
-      .map(u => u.id === usuarioActual.id ? { ...u, direccion } : u);
-    
-    localStorage.setItem('usuarios', JSON.stringify(usuariosActualizados));
-    localStorage.setItem('usuarioActual', JSON.stringify({ ...usuarioActual, direccion }));
+    // Actualizar dirección del usuario
+    actualizarUsuario({ direccion });
 
-    alert(`¡Compra exitosa!\nPago aprobado con tarjeta terminada en ${usuarioActual.tarjeta.numero.slice(-4)}\nDirección: ${direccion}`);
+    alert(`¡Compra exitosa!\nPago aprobado con tarjeta terminada en ${user.tarjeta.numero.slice(-4)}\nDirección: ${direccion}`);
     vaciarCarrito();
-    onClose(); // ← Cierra todo
+    onClose();
   };
+
+  // No renderizar si no está autenticado
+  if (!isAuthenticated()) {
+    return null;
+  }
 
   return (
     <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex="-1">
@@ -64,24 +76,24 @@ const CheckoutModal = ({ onClose }) => {
             <button 
               type="button" 
               className="btn-close" 
-              onClick={onClose} // ← FUNCIONA
+              onClick={onClose}
               disabled={procesando}
             ></button>
           </div>
           <form onSubmit={handleSubmit}>
             <div className="modal-body">
               <div className="text-center mb-3">
-                <p><strong>{usuarioActual?.nombre}</strong></p>
-                <p className="text-muted">{usuarioActual?.email}</p>
+                <p><strong>{user?.nombre}</strong></p>
+                <p className="text-muted">{user?.email}</p>
               </div>
 
               <div className="card border-primary mb-3">
                 <div className="card-body">
-                  <p className="mb-1"><strong>Tarjeta:</strong> {usuarioActual?.tarjeta?.numero}</p>
-                  <p className="mb-1"><strong>Titular:</strong> {usuarioActual?.tarjeta?.titular}</p>
-                  <p className="mb-0"><strong>Expira:</strong> {usuarioActual?.tarjeta?.expiracion}</p>
-                  <small className={`text-${usuarioActual?.tarjeta?.valida ? 'success' : 'danger'} fw-bold`}>
-                    {usuarioActual?.tarjeta?.valida ? 'Tarjeta válida' : 'Fondos insuficientes'}
+                  <p className="mb-1"><strong>Tarjeta:</strong> {user?.tarjeta?.numero}</p>
+                  <p className="mb-1"><strong>Titular:</strong> {user?.tarjeta?.titular}</p>
+                  <p className="mb-0"><strong>Expira:</strong> {user?.tarjeta?.expiracion}</p>
+                  <small className={`text-${user?.tarjeta?.valida ? 'success' : 'danger'} fw-bold`}>
+                    {user?.tarjeta?.valida ? 'Tarjeta válida' : 'Fondos insuficientes'}
                   </small>
                 </div>
               </div>
@@ -110,7 +122,7 @@ const CheckoutModal = ({ onClose }) => {
               <button 
                 type="button" 
                 className="btn btn-outline-secondary" 
-                onClick={onClose} // ← Cierra con botón
+                onClick={onClose}
                 disabled={procesando}
               >
                 Cancelar
@@ -118,7 +130,7 @@ const CheckoutModal = ({ onClose }) => {
               <button 
                 type="submit" 
                 className="btn btn-success" 
-                disabled={procesando || !usuarioActual?.tarjeta?.valida}
+                disabled={procesando || !user?.tarjeta?.valida}
               >
                 {procesando ? 'Procesando pago...' : 'Confirmar Compra'}
               </button>

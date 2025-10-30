@@ -21,16 +21,29 @@ export const AuthProvider = ({ children }) => {
     return initialUsers;
   };
 
+  // Obtener usuario completo con todos los datos (tarjeta, dirección, etc.)
+  const getUsuarioCompleto = (userId) => {
+    const users = getUsers();
+    return users.find(u => u.id === userId);
+  };
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const userData = JSON.parse(storedUser);
+      // Obtener datos completos del usuario
+      const usuarioCompleto = getUsuarioCompleto(userData.id);
+      if (usuarioCompleto) {
+        setUser(usuarioCompleto);
+      } else {
+        setUser(userData);
+      }
     }
     setLoading(false);
   }, []);
 
   const login = (username, password) => {
-    const users = getUsers(); // Usar MISMA fuente de datos
+    const users = getUsers();
     console.log('🔐 Intentando login con:', { username, password });
     console.log('📋 Usuarios disponibles:', users);
     
@@ -39,12 +52,15 @@ export const AuthProvider = ({ children }) => {
     );
 
     if (usuario) {
+      // Guardar usuario completo con todos los datos
       const userData = {
         id: usuario.id,
         user: usuario.user,
         nombre: usuario.nombre,
         email: usuario.email,
-        rol: usuario.rol
+        rol: usuario.rol,
+        direccion: usuario.direccion,
+        tarjeta: usuario.tarjeta
       };
       
       setUser(userData);
@@ -66,11 +82,30 @@ export const AuthProvider = ({ children }) => {
     return user?.rol === 'admin';
   };
 
+  const isAuthenticated = () => {
+    return !!user;
+  };
+
+  const actualizarUsuario = (nuevosDatos) => {
+    const users = getUsers();
+    const usuariosActualizados = users.map(u => 
+      u.id === user.id ? { ...u, ...nuevosDatos } : u
+    );
+    
+    localStorage.setItem('app_usuarios', JSON.stringify(usuariosActualizados));
+    
+    const usuarioActualizado = { ...user, ...nuevosDatos };
+    setUser(usuarioActualizado);
+    localStorage.setItem('user', JSON.stringify(usuarioActualizado));
+  };
+
   const value = {
     user,
     login,
     logout,
     isAdmin,
+    isAuthenticated,
+    actualizarUsuario,
     loading
   };
 
