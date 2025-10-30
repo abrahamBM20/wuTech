@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useFormValidation } from '../hooks/useFormValidation';
+import { useUsuarios } from '../hooks/useUsuarios';
 
 const RegistroUsuario = () => {
   const [formData, setFormData] = useState({
-    user: '',
+    nombre: '',     // Nombre completo
+    username: '',   // Nombre de usuario  
     correo: '',
     correo1: '',
     pass: '',
-    pass2: '',
-    number: ''
+    pass2: ''
   });
 
-  const { errors, validateField } = useFormValidation();
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
+  
+  const { errors, validateField, validateForm } = useFormValidation();
+  const { agregarUsuario } = useUsuarios();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,27 +27,64 @@ const RegistroUsuario = () => {
       [name]: value
     }));
 
+    // Limpiar error del servidor cuando el usuario empiece a escribir
+    if (serverError) {
+      setServerError('');
+    }
+
     // Validación en tiempo real
     validateField(name, value, formData);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validar todos los campos antes de enviar
-    const validations = [
-      validateField('user', formData.user, formData),
-      validateField('correo', formData.correo, formData),
-      validateField('correo1', formData.correo1, formData),
-      validateField('pass', formData.pass, formData),
-      validateField('pass2', formData.pass2, formData)
-    ];
+    setLoading(true);
+    setServerError('');
 
-    if (validations.every(valid => valid)) {
-      console.log('Registrando usuario:', formData);
-      alert('Usuario registrado exitosamente');
-      // Aquí iría la lógica de registro
+    // Validar todos los campos antes de enviar
+    const isValid = validateForm(formData);
+
+    if (!isValid) {
+      setLoading(false);
+      return;
     }
+
+    try {
+      // Registrar el usuario usando el hook
+      const newUser = agregarUsuario(formData);
+      
+      console.log('Usuario registrado exitosamente:', newUser);
+      
+      // Mostrar mensaje de éxito
+      alert('¡Usuario registrado exitosamente! Ahora puedes iniciar sesión.');
+      
+      // Redirigir al login
+      navigate('/iniciar-sesion');
+      
+    } catch (error) {
+      console.error('Error al registrar usuario:', error);
+      setServerError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para verificar si el formulario es válido
+  const isFormValid = () => {
+    return (
+      formData.nombre &&
+      formData.username &&
+      formData.correo &&
+      formData.correo1 &&
+      formData.pass &&
+      formData.pass2 &&
+      !errors.nombre &&
+      !errors.username &&
+      !errors.correo &&
+      !errors.correo1 &&
+      !errors.pass &&
+      !errors.pass2
+    );
   };
 
   return (
@@ -54,21 +97,48 @@ const RegistroUsuario = () => {
                 <img src="/img/logo.png" alt="WU-TECH" width="250" height="250" />
               </div>
               <div className="card-body custom-form">
+                
+                {/* Mostrar error del servidor */}
+                {serverError && (
+                  <div className="alert alert-danger" role="alert">
+                    {serverError}
+                  </div>
+                )}
+
                 <form className="form form-container" onSubmit={handleSubmit}>
+                  
                   {/* Nombre completo */}
                   <div className="input-group">
                     <input 
                       type="text" 
-                      id="user" 
-                      name="user"
-                      className="form-control" 
+                      id="nombre" 
+                      name="nombre"
+                      className={`form-control ${errors.nombre ? 'is-invalid' : ''}`}
                       placeholder=" " 
                       required 
-                      value={formData.user}
+                      value={formData.nombre}
                       onChange={handleChange}
+                      disabled={loading}
                     />
-                    <label htmlFor="user" className="form-label">Nombre completo</label>
-                    {errors.user && <div className="text-danger small mt-1">{errors.user}</div>}
+                    <label htmlFor="nombre" className="form-label">Nombre completo</label>
+                    {errors.nombre && <div className="text-danger small mt-1">{errors.nombre}</div>}
+                  </div>
+
+                  {/* Nombre de usuario */}
+                  <div className="input-group mt-3">
+                    <input 
+                      type="text" 
+                      id="username" 
+                      name="username"
+                      className={`form-control ${errors.username ? 'is-invalid' : ''}`}
+                      placeholder=" " 
+                      required 
+                      value={formData.username}
+                      onChange={handleChange}
+                      disabled={loading}
+                    />
+                    <label htmlFor="username" className="form-label">Nombre de usuario</label>
+                    {errors.username && <div className="text-danger small mt-1">{errors.username}</div>}
                   </div>
 
                   {/* Correo */}
@@ -77,12 +147,13 @@ const RegistroUsuario = () => {
                       type="email" 
                       id="correo" 
                       name="correo"
-                      className="form-control" 
+                      className={`form-control ${errors.correo ? 'is-invalid' : ''}`}
                       placeholder=" "
                       value={formData.correo}
                       onChange={handleChange}
+                      disabled={loading}
                     />
-                    <label htmlFor="correo" className="form-label">Correo</label>
+                    <label htmlFor="correo" className="form-label">Correo electrónico</label>
                     {errors.correo && <div className="text-danger small mt-1">{errors.correo}</div>}
                   </div>
 
@@ -92,12 +163,13 @@ const RegistroUsuario = () => {
                       type="email" 
                       id="correo1" 
                       name="correo1"
-                      className="form-control" 
+                      className={`form-control ${errors.correo1 ? 'is-invalid' : ''}`}
                       placeholder=" "
                       value={formData.correo1}
                       onChange={handleChange}
+                      disabled={loading}
                     />
-                    <label htmlFor="correo1" className="form-label">Confirmar correo</label>
+                    <label htmlFor="correo1" className="form-label">Confirmar correo electrónico</label>
                     {errors.correo1 && <div className="text-danger small mt-1">{errors.correo1}</div>}
                   </div>
 
@@ -107,10 +179,11 @@ const RegistroUsuario = () => {
                       type="password" 
                       id="pass" 
                       name="pass"
-                      className="form-control" 
+                      className={`form-control ${errors.pass ? 'is-invalid' : ''}`}
                       placeholder=" "
                       value={formData.pass}
                       onChange={handleChange}
+                      disabled={loading}
                     />
                     <label htmlFor="pass" className="form-label">Contraseña</label>
                     {errors.pass && <div className="text-danger small mt-1">{errors.pass}</div>}
@@ -122,42 +195,37 @@ const RegistroUsuario = () => {
                       type="password" 
                       id="pass2" 
                       name="pass2"
-                      className="form-control" 
+                      className={`form-control ${errors.pass2 ? 'is-invalid' : ''}`}
                       placeholder=" "
                       value={formData.pass2}
                       onChange={handleChange}
+                      disabled={loading}
                     />
                     <label htmlFor="pass2" className="form-label">Confirmar contraseña</label>
                     {errors.pass2 && <div className="text-danger small mt-1">{errors.pass2}</div>}
                   </div>
 
-                  {/* Teléfono (opcional) */}
-                  <div className="input-group mt-3">
-                    <input 
-                      type="text" 
-                      id="number" 
-                      name="number"
-                      className="form-control" 
-                      placeholder=" "
-                      value={formData.number}
-                      onChange={handleChange}
-                    />
-                    <label htmlFor="number" className="form-label">Teléfono / celular (opcional)</label>
-                  </div>
-
                   <div className="enlaces mt-3">
                     <Link to="/iniciar-sesion">Ya tengo una cuenta</Link>
                   </div>
+
+                  <div className="d-flex justify-content-center mt-4">
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary"
+                      disabled={loading || !isFormValid()}
+                    >
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                          Registrando...
+                        </>
+                      ) : (
+                        'Registrar'
+                      )}
+                    </button>
+                  </div>
                 </form>
-                <div className="d-flex justify-content-center mt-4">
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary"
-                    onClick={handleSubmit}
-                  >
-                    Registrar
-                  </button>
-                </div>
               </div>   
             </div>
           </div>

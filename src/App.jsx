@@ -25,8 +25,10 @@ import AdminProductos from './pages/admin/AdminProductos';
 import FormularioProducto from './pages/admin/FormularioProducto';
 import AdminDetalleProducto from './pages/admin/AdminDetalleProducto';
 import './styles/style.css';
+import { users as initialUsers } from './data/users';
 
 function App() {
+  
   return (
     <AuthProvider>
       <CartProvider>
@@ -153,6 +155,7 @@ function App() {
       </CartProvider>
     </AuthProvider>
   );
+  
 }
 
 export default App;
