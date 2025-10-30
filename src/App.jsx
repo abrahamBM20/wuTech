@@ -20,10 +20,6 @@ import FormularioUsuario from './pages/admin/FormularioUsuario';
 import DetalleUsuario from './pages/admin/DetalleUsuario';
 import Categorias from './pages/admin/Categorias';
 import FormularioCategoria from './pages/admin/FormularioCategoria';
-// Importaciones corregidas para productos admin
-import AdminProductos from './pages/admin/AdminProductos';
-import FormularioProducto from './pages/admin/FormularioProducto';
-import AdminDetalleProducto from './pages/admin/AdminDetalleProducto';
 import './styles/style.css';
 
 function App() {
@@ -107,40 +103,6 @@ function App() {
                   element={
                     <ProtectedRoute requireAdmin={true}>
                       <FormularioCategoria />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Nuevas rutas para gestión de productos */}
-                <Route 
-                  path="/admin/productos" 
-                  element={
-                    <ProtectedRoute requireAdmin={true}>
-                      <AdminProductos />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/admin/productos/nuevo" 
-                  element={
-                    <ProtectedRoute requireAdmin={true}>
-                      <FormularioProducto />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/admin/productos/editar/:id" 
-                  element={
-                    <ProtectedRoute requireAdmin={true}>
-                      <FormularioProducto />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/admin/productos/detalle/:id" 
-                  element={
-                    <ProtectedRoute requireAdmin={true}>
-                      <AdminDetalleProducto />
                     </ProtectedRoute>
                   } 
                 />

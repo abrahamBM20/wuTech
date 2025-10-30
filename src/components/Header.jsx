@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
@@ -7,7 +6,7 @@ import LogoutButton from './LogoutButton';
 
 const Header = () => {
   const { carrito, setShowCart } = useCart();
-  const { user } = useAuth();
+  const { usuarioActual } = useAuth();
 
   return (
     <header>
@@ -35,36 +34,42 @@ const Header = () => {
               <li className="nav-item">
                 <Link className="nav-link" to="/blogs">Blogs</Link>
               </li>
-              {/* Enlace al Dashboard para administradores */}
-              {user?.rol === 'admin' && (
+              
+              {usuarioActual?.rol === 'admin' && (
                 <li className="nav-item">
-                  <Link className="nav-link text-warning" to="/admin">
-                    🛠️ Admin Panel
+                  <Link className="nav-link text-warning fw-bold" to="/admin">
+                    Admin Panel
                   </Link>
                 </li>
               )}
             </ul>
-            <div className="d-flex align-items-center">
+            <div className="d-flex align-items-center gap-3">
               <button 
-                className="btn btn-outline-primary me-3" 
+                className="btn btn-outline-primary position-relative"
                 onClick={() => setShowCart(true)}
               >
-                🛒 Ver Carrito {carrito.length > 0 && `(${carrito.length})`}
+                Ver Carrito
+                {carrito.length > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {carrito.length}
+                  </span>
+                )}
               </button>
               
-              {/* Mostrar diferentes botones según si el usuario está autenticado o no */}
-              {user ? (
-                <div className="d-flex align-items-center">
-                  <span className="me-3 text-muted">Hola, {user.nombre}</span>
+              {/* Mostrar usuario logueado */}
+              {usuarioActual ? (
+                <div className="d-flex align-items-center gap-2">
+                  <span className="text-muted small">Hola,</span>
+                  <span className="fw-semibold">{usuarioActual.nombre}</span>
                   <LogoutButton />
                 </div>
               ) : (
-                <div className="btn-group-responsive">
+                <div className="d-flex gap-2">
                   <Link to="/registro">
-                    <button className="btn btn-outline-primary me-2">Registrarse</button>
+                    <button className="btn btn-outline-success">Registrarse</button>
                   </Link>
                   <Link to="/iniciar-sesion">
-                    <button className="btn btn-outline-primary">Iniciar sesión</button>
+                    <button className="btn btn-primary">Iniciar sesión</button>
                   </Link>
                 </div>
               )}

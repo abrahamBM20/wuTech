@@ -17,31 +17,18 @@ const ProductCard = ({ producto }) => {
 
   return (
     <div className="card h-100 shadow-sm">
-      <img src={producto.imagen} className="card-img-top" alt={producto.nombre} style={{ height: '200px', objectFit: 'cover' }} />
-      <div className="card-body text-center d-flex flex-column">
+      <img src={producto.imagen} className="card-img-top" alt={producto.nombre} />
+      <div className="card-body text-center">
         <h5 className="card-title">{producto.nombre}</h5>
         <p className="text-muted small mb-1">Categoría: {nombreCategoria}</p>
         <p className="card-text text-success fw-bold">{formattedPrice}</p>
-        
-        {/* Mostrar stock */}
-        <div className="mb-2">
-          <span className={`badge ${producto.stock > 0 ? 'bg-success' : 'bg-danger'}`}>
-            {producto.stock > 0 ? `${producto.stock} en stock` : 'Sin stock'}
-          </span>
-        </div>
-
-        <div className="mt-auto">
-          <Link to={`/producto/${producto.id}`} className="btn btn-secondary me-2 w-100 mb-2">
-            Ver más
-          </Link>
-          <button 
-            className="btn btn-primary w-100" 
-            onClick={() => addToCart(producto)}
-            disabled={producto.stock === 0}
-          >
-            {producto.stock > 0 ? 'Agregar al carrito' : 'Sin stock'}
-          </button>
-        </div>
+        <Link to={`/producto/${producto.id}`} className="btn btn-secondary me-2">Ver más</Link>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => addToCart(producto)}
+        >
+          Agregar al carrito
+        </button>
       </div>
     </div>
   );

@@ -41,20 +41,6 @@ const Dashboard = () => {
             </Link>
           </div>
         </div>
-
-        {/* Futuro: Productos */}
-        <div className="col-md-4">
-          <div className="service-card">
-            <div className="service-icon">
-              <FaLaptop />
-            </div>
-            <h3>Gestión de Productos</h3>
-            <p>Agrega, edita y controla el inventario completo.</p>
-            <Link to="/admin/productos" className="btn-service">
-              Gestionar productos
-            </Link>
-          </div>
-        </div>
       </div>
 
       <div className="text-center mt-5">

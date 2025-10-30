@@ -1,10 +1,12 @@
+// src/pages/admin/Usuarios.jsx
 import React from 'react';
 import { useUsuarios } from '../../hooks/useUsuarios';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // ← AÑADE ESTO
 import '../../styles/AdminPanel.css';
 
 const Usuarios = () => {
   const { usuarios, cargando, eliminarUsuario } = useUsuarios();
+  const navigate = useNavigate(); // ← AÑADE ESTO
 
   if (cargando) {
     return (
@@ -19,9 +21,12 @@ const Usuarios = () => {
     <div className="admin-container">
       <div className="flex justify-between items-center mb-6">
         <h1 className="admin-title">Lista de Usuarios</h1>
-        <Link to="/admin/nuevo-usuario" className="btn-primary-admin">
+        <button 
+          onClick={() => navigate('/admin/nuevo-usuario')}
+          className="btn-primary-admin"
+        >
           + Agregar Usuario
-        </Link>
+        </button>
       </div>
 
       <div className="admin-card">
@@ -51,12 +56,18 @@ const Usuarios = () => {
                   </span>
                 </td>
                 <td>
-                  <Link to={`/admin/detalle-usuario/${u.id}`} className="btn-action">
+                  <button 
+                    onClick={() => navigate(`/admin/detalle-usuario/${u.id}`)}
+                    className="btn-action"
+                  >
                     Ver
-                  </Link>
-                  <Link to={`/admin/editar-usuario/${u.id}`} className="btn-action">
+                  </button>
+                  <button 
+                    onClick={() => navigate(`/admin/editar-usuario/${u.id}`)}
+                    className="btn-action"
+                  >
                     Editar
-                  </Link>
+                  </button>
                   <button
                     onClick={() => window.confirm(`¿Eliminar a ${u.nombre}?`) && eliminarUsuario(u.id)}
                     className="btn-action btn-delete"
