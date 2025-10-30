@@ -4,9 +4,13 @@ import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import LogoutButton from './LogoutButton';
 
-const Header = () => {
+const Header = ({ onMostrarCheckout }) => {
   const { carrito, setShowCart } = useCart();
   const { user } = useAuth();
+
+  const handleVerCarrito = () => {
+    setShowCart(true);
+  };
 
   return (
     <header>
@@ -46,7 +50,7 @@ const Header = () => {
             <div className="d-flex align-items-center gap-3">
               <button 
                 className="btn btn-outline-primary position-relative"
-                onClick={() => setShowCart(true)}
+                onClick={handleVerCarrito}
               >
                 Ver Carrito
                 {carrito.length > 0 && (

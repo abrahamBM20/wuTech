@@ -3,7 +3,7 @@ import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import CheckoutModal from './CheckoutModal';
 
-const CartModal = () => {
+const CartModal = ({ onMostrarCheckout }) => {
   const { 
     carrito, 
     eliminarDelCarrito, 
@@ -13,24 +13,35 @@ const CartModal = () => {
     setShowCart 
   } = useCart();
 
-  const { usuarioActual } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [showCheckout, setShowCheckout] = useState(false);
 
   const handleFinalizarCompra = () => {
-    if (!usuarioActual) {
+    if (!isAuthenticated()) {
       alert('Debes iniciar sesión para comprar');
       setShowCart(false);
+      // Usar navigate en lugar de window.location para mejor experiencia
       window.location.href = '/iniciar-sesion';
       return;
     }
+    
+    if (!user?.tarjeta) {
+      alert('No tienes una tarjeta configurada. Contacta al administrador.');
+      return;
+    }
+
     setShowCheckout(true);
+  };
+
+  const handleCerrarTodo = () => {
+    setShowCheckout(false);
+    setShowCart(false);
   };
 
   if (!showCart) return null;
 
   return (
     <>
-
       <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex="-1">
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
@@ -70,7 +81,11 @@ const CartModal = () => {
               )}
             </div>
             <div className="modal-footer">
-              <button className="btn btn-outline-danger" onClick={vaciarCarrito}>
+              <button 
+                className="btn btn-outline-danger" 
+                onClick={vaciarCarrito}
+                disabled={carrito.length === 0}
+              >
                 Vaciar Carrito
               </button>
               <button 
@@ -85,14 +100,8 @@ const CartModal = () => {
         </div>
       </div>
 
-
-      {showCheckout && usuarioActual && (
-        <CheckoutModal 
-          onClose={() => {
-            setShowCheckout(false);
-            setShowCart(false); 
-          }} 
-        />
+      {showCheckout && isAuthenticated() && (
+        <CheckoutModal onClose={handleCerrarTodo} />
       )}
     </>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './hooks/useCart';
 import { AuthProvider } from './hooks/useAuth';
@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import CartModal from './components/CartModal';
+import CheckoutModal from './components/CheckoutModal';
 import Home from './pages/Home';
 import Productos from './pages/Productos';
 import DetalleProducto from './pages/DetalleProducto';
@@ -20,7 +21,6 @@ import FormularioUsuario from './pages/admin/FormularioUsuario';
 import DetalleUsuario from './pages/admin/DetalleUsuario';
 import Categorias from './pages/admin/Categorias';
 import FormularioCategoria from './pages/admin/FormularioCategoria';
-// Importaciones corregidas para productos admin
 import AdminProductos from './pages/admin/AdminProductos';
 import FormularioProducto from './pages/admin/FormularioProducto';
 import AdminDetalleProducto from './pages/admin/AdminDetalleProducto';
@@ -28,13 +28,24 @@ import './styles/style.css';
 import { users as initialUsers } from './data/users';
 
 function App() {
+  const [mostrarCheckout, setMostrarCheckout] = useState(false);
+
+ 
+  const handleMostrarCheckout = () => {
+    setMostrarCheckout(true);
+  };
+
   
+  const handleCerrarCheckout = () => {
+    setMostrarCheckout(false);
+  };
+
   return (
     <AuthProvider>
       <CartProvider>
         <Router>
           <div className="App">
-            <Header />
+            <Header onMostrarCheckout={handleMostrarCheckout} />
             <main className="min-vh-100">
               <Routes>
                 {/* Rutas públicas */}
@@ -149,13 +160,15 @@ function App() {
               </Routes>
             </main>
             <Footer />
-            <CartModal />
+            <CartModal onMostrarCheckout={handleMostrarCheckout} />
+            {mostrarCheckout && (
+              <CheckoutModal onClose={handleCerrarCheckout} />
+            )}
           </div>
         </Router>
       </CartProvider>
     </AuthProvider>
   );
-  
 }
 
 export default App;
